@@ -5,7 +5,7 @@ import './Login.css'; // Import the CSS file
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('user'); // Default to 'user'
+  const [role, setRole] = useState('user'); 
   const navigate = useNavigate();
 
   const handleLogin = async () => {

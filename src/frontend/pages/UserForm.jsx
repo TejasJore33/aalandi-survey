@@ -1,8 +1,11 @@
 import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import "./UserForm.css";
 
 // Define UserForm component
 const UserForm = () => {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     wardNo: "",
     houseNo: "",
@@ -13,7 +16,7 @@ const UserForm = () => {
     propertyType: "",
     propertyTypeDetails: "",
     industryType: "",
-    municipalWaterConnection: "",
+    hasWaterConnection: null,
     authorizedConnections: 0,
     authorizedDiameters: [],
     propertyPhoto: null,
@@ -22,7 +25,6 @@ const UserForm = () => {
     noConnectionReason: "",
   });
 
-  // Handle input change for all form fields
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     if (type === "checkbox") {
@@ -38,7 +40,6 @@ const UserForm = () => {
     }
   };
 
-  // Handle file upload changes
   const handleFileChange = (e) => {
     const { name, files } = e.target;
     setFormData((prevData) => ({
@@ -47,7 +48,10 @@ const UserForm = () => {
     }));
   };
 
-  // WaterConnectionSelection component
+  const handleLogout = () => {
+    navigate('/');
+  };
+
   const WaterConnectionSelection = ({ formData, setFormData }) => {
     const authorizedConnections = formData.authorizedConnections || 0;
     const authorizedDiameters = formData.authorizedDiameters || [];
@@ -91,7 +95,13 @@ const UserForm = () => {
               type="radio"
               name="hasWaterConnection"
               checked={hasWaterConnection === true}
-              onChange={() => setFormData((prev) => ({ ...prev, hasWaterConnection: true, noConnectionReason: "" }))}
+              onChange={() =>
+                setFormData((prev) => ({
+                  ...prev,
+                  hasWaterConnection: true,
+                  noConnectionReason: ""
+                }))
+              }
             />
             <span>Yes</span>
           </label>
@@ -100,20 +110,30 @@ const UserForm = () => {
               type="radio"
               name="hasWaterConnection"
               checked={hasWaterConnection === false}
-              onChange={() => setFormData((prev) => ({ ...prev, hasWaterConnection: false, authorizedConnections: 0, authorizedDiameters: [] }))}
+              onChange={() =>
+                setFormData((prev) => ({
+                  ...prev,
+                  hasWaterConnection: false,
+                  authorizedConnections: 0,
+                  authorizedDiameters: []
+                }))
+              }
             />
             <span>No</span>
           </label>
         </div>
 
-        {/* If Yes */}
         {hasWaterConnection === true && (
           <div className="mt-4">
-            <label className="block font-medium mb-1">No of Authorized Water Connections:</label>
+            <label className="block font-medium mb-1">
+              No of Authorized Water Connections:
+            </label>
             <select
               className="w-full border border-gray-300 rounded-full p-3"
               value={authorizedConnections}
-              onChange={(e) => handleAuthorizedConnectionsChange(Number(e.target.value))}
+              onChange={(e) =>
+                handleAuthorizedConnectionsChange(Number(e.target.value))
+              }
             >
               {[...Array(9).keys()].map((n) => (
                 <option key={n} value={n}>{n}</option>
@@ -122,7 +142,9 @@ const UserForm = () => {
 
             {authorizedConnections > 0 && (
               <div className="mt-4">
-                <label className="block font-medium mb-2">Diameter of Authorized Connections:</label>
+                <label className="block font-medium mb-2">
+                  Diameter of Authorized Connections:
+                </label>
                 {Array.from({ length: authorizedConnections }).map((_, idx) => (
                   <div key={idx} className="mb-2 border rounded p-2">
                     <div className="font-semibold mb-1">Connection {idx + 1}</div>
@@ -145,19 +167,25 @@ const UserForm = () => {
           </div>
         )}
 
-        {/* If No */}
         {hasWaterConnection === false && (
           <div className="mt-4">
-            <label className="block font-medium mb-1">Reason for No Water Connection:</label>
+            <label className="block font-medium mb-1">
+              Reason for No Water Connection:
+            </label>
             <select
               className="w-full border border-gray-300 rounded-full p-3"
               value={noConnectionReason}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, noConnectionReason: e.target.value }))
+                setFormData((prev) => ({
+                  ...prev,
+                  noConnectionReason: e.target.value
+                }))
               }
             >
               <option value="">Select</option>
-              <option value="Unauthorized water connection">Unauthorized water connection</option>
+              <option value="Unauthorized water connection">
+                Unauthorized water connection
+              </option>
               <option value="Municipal water line not passed near the property">
                 Municipal water line not passed near the property
               </option>
@@ -168,18 +196,48 @@ const UserForm = () => {
     );
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formDataToSubmit = new FormData();
-    for (const key in formData) {
-      if (formData[key] instanceof Array) {
-        formData[key].forEach((item) => formDataToSubmit.append(key, item));
-      } else if (formData[key] instanceof File) {
-        formDataToSubmit.append(key, formData[key]);
-      } else {
-        formDataToSubmit.append(key, formData[key]);
-      }
+
+    // Basic fields
+    formDataToSubmit.append("wardNo", formData.wardNo);
+    formDataToSubmit.append("houseNo", formData.houseNo);
+    formDataToSubmit.append("residentName", formData.residentName);
+    formDataToSubmit.append("mobileNo", formData.mobileNo);
+    formDataToSubmit.append("address", formData.address);
+    formDataToSubmit.append("totalHouseholds", formData.totalHouseholds);
+    formDataToSubmit.append("propertyType", formData.propertyType);
+    formDataToSubmit.append("propertyTypeDetails", formData.propertyTypeDetails);
+    formDataToSubmit.append("industryType", formData.industryType);
+
+    // Fixed fields
+    formDataToSubmit.append(
+      "municipalWaterConnection",
+      formData.hasWaterConnection ? "Yes" : "No"
+    );
+    formDataToSubmit.append(
+      "authorizedWaterConnections",
+      formData.authorizedConnections.toString()
+    );
+    formDataToSubmit.append(
+      "authorizedConnectionDiameter",
+      formData.authorizedDiameters.flat().join(",")
+    );
+
+    if (!formData.hasWaterConnection) {
+      formDataToSubmit.append("noConnectionReason", formData.noConnectionReason);
+    }
+
+    // Files
+    if (formData.propertyPhoto) {
+      formDataToSubmit.append("propertyPhoto", formData.propertyPhoto);
+    }
+    if (formData.pipelinePhoto) {
+      formDataToSubmit.append("pipelinePhoto", formData.pipelinePhoto);
+    }
+    if (formData.waterTaxBill) {
+      formDataToSubmit.append("waterTaxBill", formData.waterTaxBill);
     }
 
     try {
@@ -196,101 +254,52 @@ const UserForm = () => {
       }
     } catch (error) {
       alert("Error submitting form");
+      console.error("Form submission error:", error);
     }
   };
 
   return (
     <div className="user-form-container">
       <h2>आळंदी नगरपरषद - आळंदी</h2>
+      <button className="logout-button" onClick={handleLogout}>Logout</button>
       <form onSubmit={handleSubmit}>
-        {/* Ward and House details */}
         <div className="form-row">
           <label>वॉड मांक (Ward No):</label>
-          <input
-            type="text"
-            name="wardNo"
-            value={formData.wardNo}
-            onChange={handleChange}
-            required
-          />
+          <input type="text" name="wardNo" value={formData.wardNo} onChange={handleChange} required />
         </div>
         <div className="form-row">
           <label>घर मांक (House No):</label>
-          <input
-            type="text"
-            name="houseNo"
-            value={formData.houseNo}
-            onChange={handleChange}
-            required
-          />
+          <input type="text" name="houseNo" value={formData.houseNo} onChange={handleChange} required />
         </div>
         <div className="form-row">
           <label>निवासीचे नाव (Name of Resident):</label>
-          <input
-            type="text"
-            name="residentName"
-            value={formData.residentName}
-            onChange={handleChange}
-            required
-          />
+          <input type="text" name="residentName" value={formData.residentName} onChange={handleChange} required />
         </div>
         <div className="form-row">
           <label>मोबाईल नंबर (Mobile No):</label>
-          <input
-            type="text"
-            name="mobileNo"
-            value={formData.mobileNo}
-            onChange={handleChange}
-            required
-          />
+          <input type="text" name="mobileNo" value={formData.mobileNo} onChange={handleChange} required />
         </div>
         <div className="form-row">
           <label>पत्ता (Address):</label>
-          <input
-            type="text"
-            name="address"
-            value={formData.address}
-            onChange={handleChange}
-            required
-          />
+          <input type="text" name="address" value={formData.address} onChange={handleChange} required />
         </div>
         <div className="form-row">
           <label>कुटुंबांची संख्या (Total Households):</label>
-          <input
-            type="number"
-            name="totalHouseholds"
-            value={formData.totalHouseholds}
-            onChange={handleChange}
-            required
-          />
+          <input type="number" name="totalHouseholds" value={formData.totalHouseholds} onChange={handleChange} required />
         </div>
-
-        {/* Property Type Dropdown */}
         <div className="form-row">
           <label>प्रॉपर्टी प्रकार (Property Type):</label>
-          <select
-            className="w-full border border-gray-300 rounded-full p-3"
-            name="propertyType"
-            value={formData.propertyType}
-            onChange={handleChange}
-          >
+          <select name="propertyType" value={formData.propertyType} onChange={handleChange} className="w-full border border-gray-300 rounded-full p-3">
             <option value="">Select</option>
             <option value="Residential">Residential</option>
             <option value="Commercial">Commercial</option>
             <option value="Industrial">Industrial</option>
           </select>
         </div>
-
-        {/* Property Specific Options */}
         {formData.propertyType === "Residential" && (
           <div>
             <label className="block">Residential Options</label>
-            <select
-              name="propertyTypeDetails"
-              className="w-full border border-gray-300 rounded-full p-3"
-              value={formData.propertyTypeDetails}
-              onChange={handleChange}
-            >
+            <select name="propertyTypeDetails" value={formData.propertyTypeDetails} onChange={handleChange} className="w-full border border-gray-300 rounded-full p-3">
               <option value="Apartment">Apartment</option>
               <option value="Bungalow">Bungalow</option>
             </select>
@@ -299,12 +308,7 @@ const UserForm = () => {
         {formData.propertyType === "Commercial" && (
           <div>
             <label className="block">Commercial Options</label>
-            <select
-              name="propertyTypeDetails"
-              className="w-full border border-gray-300 rounded-full p-3"
-              value={formData.propertyTypeDetails}
-              onChange={handleChange}
-            >
+            <select name="propertyTypeDetails" value={formData.propertyTypeDetails} onChange={handleChange} className="w-full border border-gray-300 rounded-full p-3">
               <option value="School">School</option>
               <option value="Shop">Shop</option>
               <option value="Office">Office</option>
@@ -316,46 +320,25 @@ const UserForm = () => {
         {formData.propertyType === "Industrial" && (
           <div>
             <label className="block">Type of Industry</label>
-            <input
-              type="text"
-              name="industryType"
-              value={formData.industryType}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-full p-3"
-            />
+            <input type="text" name="industryType" value={formData.industryType} onChange={handleChange} className="w-full border border-gray-300 rounded-full p-3" />
           </div>
         )}
 
-        {/* Water Connection Section */}
+        {/* Water Connection */}
         <WaterConnectionSelection formData={formData} setFormData={setFormData} />
 
         {/* File Uploads */}
         <div className="form-row">
           <label>Attach Photo of the Property:</label>
-          <input
-            type="file"
-            name="propertyPhoto"
-            onChange={handleFileChange}
-            accept="image/*"
-          />
+          <input type="file" name="propertyPhoto" onChange={handleFileChange} accept="image/*" />
         </div>
         <div className="form-row">
           <label>Attach Photo of Pipeline:</label>
-          <input
-            type="file"
-            name="pipelinePhoto"
-            onChange={handleFileChange}
-            accept="image/*"
-          />
+          <input type="file" name="pipelinePhoto" onChange={handleFileChange} accept="image/*" />
         </div>
         <div className="form-row">
           <label>Upload Water Tax Bill:</label>
-          <input
-            type="file"
-            name="waterTaxBill"
-            onChange={handleFileChange}
-            accept="image/*"
-          />
+          <input type="file" name="waterTaxBill" onChange={handleFileChange} accept="image/*" />
         </div>
 
         <button type="submit" className="submit-btn">Submit</button>

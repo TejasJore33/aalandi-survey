@@ -1,5 +1,6 @@
 .container {
-  max-width: 1300px !important;
+  max-width: 1300px;
+  width: 95%;
   margin: 30px auto;
   padding: 20px;
   background-color: #f9f9f9;
@@ -13,10 +14,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .logout-button {
   background-color: #f44336;
+  width: 100px;
   padding: 6px 14px;
   border: none;
   color: white;
@@ -31,6 +34,8 @@
 
 h2, h3 {
   color: #333;
+  font-size: 1.6rem;
+  margin-bottom: 10px;
 }
 
 .button-group.spaced {
@@ -38,15 +43,19 @@ h2, h3 {
   justify-content: space-around;
   margin: 20px 0;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .button-group.spaced button {
-  padding: 8px 14px;
+  padding: 10px 16px;
   font-size: 14px;
+  min-width: 250px;
+  flex: 1;
 }
 
 .input-group {
   margin-bottom: 20px;
+  width: 100%;
 }
 
 .input-group label {
@@ -55,12 +64,14 @@ h2, h3 {
   margin-bottom: 8px;
 }
 
-.input-group input {
+.input-group input,
+.input-group select {
   padding: 10px;
   width: 100%;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 16px;
+  box-sizing: border-box;
 }
 
 button {
@@ -83,12 +94,16 @@ button:hover {
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
+  overflow-x: auto;
+  display: block;
 }
 
-.full-width-table th, .full-width-table td {
+.full-width-table th,
+.full-width-table td {
   padding: 12px;
   border: 1px solid #ccc;
   text-align: left;
+  min-width: 100px;
 }
 
 .full-width-table th {
@@ -104,14 +119,58 @@ button:hover {
   margin-bottom: 15px;
 }
 
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  h2 {
+    font-size: 1.4rem;
+  }
+
+  .button-group.spaced button {
+    min-width: 180px;
+    font-size: 13px;
+  }
+}
+
 @media (max-width: 768px) {
+  .container {
+    padding: 15px;
+  }
+
+  h2, h3 {
+    font-size: 1.2rem;
+  }
+
   .button-group.spaced {
     flex-direction: column;
-    align-items: stretch;
+    gap: 12px;
   }
 
   .button-group.spaced button {
     width: 100%;
-    margin: 6px 0;
+  }
+
+  .input-group label {
+    font-size: 15px;
+  }
+
+  .input-group input {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .logout-button {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  button {
+    font-size: 15px;
+  }
+
+  .input-group input,
+  .input-group select {
+    font-size: 15px;
+    padding: 8px;
   }
 }
